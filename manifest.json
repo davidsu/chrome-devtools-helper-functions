@@ -1,11 +1,12 @@
 {
     "name": "utils inject",
-    "version": "0.0.3",
+    "version": "0.0.6",
     "manifest_version": 2,
     "description": "Injecting wix helper stuff stuff",
     "content_scripts": [{
         "js": ["background.js"],
-        "matches": ["http://*/*", "https://*/*"]
+        "matches": ["http://*/*", "https://*/*"],
+        "all_frames": true
     }],
     "web_accessible_resources": ["script.js"]
 }

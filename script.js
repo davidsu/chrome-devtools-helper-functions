@@ -19,7 +19,7 @@ function utilsInject(){
         return a;
     }
 
-    function findPath(_obj, prop, exactOnly = false, limit = 10){
+    function findPath(_obj, prop, limit = 10, printWholePath = false, exactOnly = false){
         var foundCount = 0
         var seen = new Set()
         function _findPath(obj, currpath){
@@ -32,6 +32,9 @@ function utilsInject(){
             seen.add(obj)
             for (var k in obj){
                 var nextPath = currpath + '.' + k
+                if(!/^[_a-zA-Z]\w*$/.test(k)) {
+                    nextPath = currpath + "['" + k +"']"
+                }
                 if(k === prop || (!exactOnly && k.toLowerCase().indexOf(prop.toLowerCase())!=-1)){
                     console.log(nextPath)
                     foundCount++
@@ -41,24 +44,14 @@ function utilsInject(){
                 }catch(e){}
             }    
         }
-        _findPath(_obj, '')
+        _findPath(_obj, printWholePath && obj.toString ? obj.toString() : '' )
     }
 
     window.printJsonCircular = printJsonCircular
     window.findPath = findPath
-
-    function injectInPreviewFrame(count){
-        if(count>30) return;
-
-        const preview = document.querySelector('#preview')
-        if(preview && preview.contentWindow){
-            preview.contentWindow.findPath = findPath
-        } else {
-            setTimeout(() => injectInPreviewFrame(count+1), 1000)
-        }
-    }
-    injectInPreviewFrame(0)
-    console.log('loading extension')
+    !window.fp && (window.fp = findPath)
+    window.requirejs && !window.fdp && (window.fdp = (...a) => findPath(requirejs.s.contexts._.defined, ...a))
 }
 window.utilsInject = utilsInject;
+window.tojson = (j) => console.log(JSON.stringify(j, null, 4))
 utilsInject();
