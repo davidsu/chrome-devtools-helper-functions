@@ -19,14 +19,14 @@ function utilsInject(){
         return a;
     }
 
-    function findPath(_obj, prop, limit = 10, printWholePath = false, exactOnly = false){
+    function findPath(_obj, prop, limit = 10, exactOnly = false){
         var foundCount = 0
         var seen = new Set()
         function _findPath(obj, currpath){
             if(foundCount > limit){
                 return
             }
-            if(!obj || seen.has(obj) || /requirejs\.s/.test(currpath) || currpath.length > 130){
+            if(!obj || seen.has(obj) || /.requirejs\.s/.test(currpath) || currpath.length > 130){
                 return
             }
             seen.add(obj)
@@ -44,14 +44,30 @@ function utilsInject(){
                 }catch(e){}
             }    
         }
-        _findPath(_obj, printWholePath && obj.toString ? obj.toString() : '' )
+        let initialPath = '';
+        if (!_obj) {
+            _obj = window
+        } else if (typeof _obj === 'string') {
+            initialPath = _obj
+            let windowObjPath = _obj.split('.')
+            _obj = window
+            windowObjPath.forEach(p => _obj = _obj[p])
+        }
+        _findPath(_obj, initialPath)
     }
 
     window.printJsonCircular = printJsonCircular
     window.findPath = findPath
     !window.fp && (window.fp = findPath)
-    window.requirejs && !window.fdp && (window.fdp = (...a) => findPath(requirejs.s.contexts._.defined, ...a))
+    window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPath('requirejs.s.contexts._.defined', ...a) })
 }
 window.utilsInject = utilsInject;
-window.tojson = (j) => console.log(JSON.stringify(j, null, 4))
+window.tojson = (j) => JSON.stringify(j, null, 4)
 utilsInject();
+utilsInject.help = 
+`fp = findPath(_obj, prop, limit = 10, exactOnly = false)                   json traverse: find property somewhere in this object
+                                                                            pass "typeof _obj == 'string'" to search in window obj and print the whole path
+fdp                                                                         "findDefinePath" like findPath(require.s.contexts._.defined, ...)                                                                            
+printJsonCircular(obj)                                                      JSON.stringify(obj, null, 4) but allow for object with circular reference
+tojson(obj)                                                                 JSON.stringify(obj, null, 4)
+`
