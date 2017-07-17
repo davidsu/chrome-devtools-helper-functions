@@ -70,9 +70,10 @@ function utilsInject(){
 window.utilsInject = utilsInject;
 window.tojson = (j) => JSON.stringify(j, null, 4)
 utilsInject();
-utilsInject.help = 
+utilsInject.help = findPath.help = 
 `fp = findPath(_obj, prop, limit = 10, exactOnly = false)                   json traverse: find property somewhere in this object
                                                                             pass "typeof _obj == 'string'" to search in window obj and print the whole path
+                                                                            prop may be a regex or a string
 fdp                                                                         "findDefinePath" like findPath(require.s.contexts._.defined, ...)                                                                            
 printJsonCircular(obj)                                                      JSON.stringify(obj, null, 4) but allow for object with circular reference
 tojson(obj)                                                                 JSON.stringify(obj, null, 4)
