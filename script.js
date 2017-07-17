@@ -22,6 +22,12 @@ function utilsInject(){
     function findPath(_obj, prop, limit = 10, exactOnly = false){
         var foundCount = 0
         var seen = new Set()
+        function isMatch(foundProp, fullPath) {
+            if (typeof prop === 'string') {
+                return foundProp === prop || (!exactOnly && foundProp.toLowerCase().indexOf(prop.toLowerCase())!=-1)
+            }
+            return prop instanceof RegExp && prop.test(fullPath)  
+        }
         function _findPath(obj, currpath){
             if(foundCount > limit){
                 return
@@ -35,7 +41,7 @@ function utilsInject(){
                 if(!/^[_a-zA-Z]\w*$/.test(k)) {
                     nextPath = currpath + "['" + k +"']"
                 }
-                if(k === prop || (!exactOnly && k.toLowerCase().indexOf(prop.toLowerCase())!=-1)){
+                if(isMatch(k, nextPath)){
                     console.log(nextPath)
                     foundCount++
                 }
