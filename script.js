@@ -29,6 +29,61 @@ function utilsInject(){
             return prop instanceof RegExp && prop.test(fullPath)  
         }
         function _findPath(obj, currpath){
+            let queue = [{
+                obj,
+                path:currpath
+            }]
+            while(queue.length){
+                let curr = queue.shift()
+                let currpath = curr.path
+                let obj = curr.obj
+                if(!obj || seen.has(obj) || /.requirejs\.s/.test(currpath) || currpath.length > 130){
+                    continue
+                }
+                if(foundCount > limit){
+                    return
+                }
+                seen.add(obj)
+                for(var k in obj) {
+                    let nextPath = currpath + '.' + k
+                    if(!/^[_a-zA-Z]\w*$/.test(k)) {
+                        nextPath = currpath + "['" + k +"']"
+                    }
+                    try{
+                        if(isMatch(k, nextPath)){
+                            console.log(nextPath)
+                            foundCount++
+                        }
+                        queue.push({
+                            obj: obj[k],
+                            path: nextPath
+                        })
+                    }catch(e){}
+                }
+            }
+        }
+        let initialPath = '';
+        if (!_obj) {
+            _obj = window
+        } else if (typeof _obj === 'string') {
+            initialPath = _obj
+            let windowObjPath = _obj.split('.')
+            _obj = window
+            windowObjPath.forEach(p => _obj = _obj[p])
+        }
+        _findPath(_obj, initialPath)
+    }
+
+    function findPathDFS(_obj, prop, limit = 10, exactOnly = false){
+        var foundCount = 0
+        var seen = new Set()
+        function isMatch(foundProp, fullPath) {
+            if (typeof prop === 'string') {
+                return foundProp === prop || (!exactOnly && foundProp.toLowerCase().indexOf(prop.toLowerCase())!=-1)
+            }
+            return prop instanceof RegExp && prop.test(fullPath)  
+        }
+        function _findPath(obj, currpath){
             if(foundCount > limit){
                 return
             }
@@ -64,6 +119,7 @@ function utilsInject(){
 
     window.printJsonCircular = printJsonCircular
     window.findPath = findPath
+    window.findPathDFS = window.fpDFS = findPathDFS
     !window.fp && (window.fp = findPath)
     window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPath('requirejs.s.contexts._.defined', ...a) })
 }
