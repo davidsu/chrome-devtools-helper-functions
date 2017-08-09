@@ -123,6 +123,14 @@ function utilsInject(){
     !window.fp && (window.fp = findPath)
     window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPath('requirejs.s.contexts._.defined', ...a) })
 }
+oldconsoleerror = console.error
+console.error = function (a) {
+    if (typeof a === 'string' && /^Warning:.*(https:\/\/fb.me|React.*npm|Calling PropTypes validators directly is not supported|Failed prop type:)/.test(a) ) {
+        return
+    }
+    oldconsoleerror.apply(console.error, arguments)
+}
+restoreConsoleError = () => console.error = oldconsoleerror
 window.utilsInject = utilsInject;
 window.tojson = (j) => JSON.stringify(j, null, 4)
 utilsInject();
