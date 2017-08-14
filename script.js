@@ -19,7 +19,7 @@ function utilsInject(){
         return a;
     }
 
-    function findPath(_obj, prop, limit = 10, exactOnly = false){
+    function findPath(_obj, prop, giveup=100000, limit = 10, exactOnly = false){
         var foundCount = 0
         var seen = new Set()
         function isMatch(foundProp, fullPath) {
@@ -28,16 +28,19 @@ function utilsInject(){
             }
             return prop instanceof RegExp && prop.test(fullPath)  
         }
+        let queue = []
         function _findPath(obj, currpath){
-            let queue = [{
+            queue.push({
                 obj,
                 path:currpath
-            }]
-            while(queue.length){
+            })
+            let i = 0
+            while(queue.length && i<=giveup){
+                i++;
                 let curr = queue.shift()
                 let currpath = curr.path
                 let obj = curr.obj
-                if(!obj || seen.has(obj) || /.requirejs\.s/.test(currpath) || currpath.length > 130){
+                if(!obj || seen.has(obj) || /(.requirejs\.s|_reactInternalInstance)/.test(currpath) || currpath.length > 130){
                     continue
                 }
                 if(foundCount > limit){
@@ -49,18 +52,17 @@ function utilsInject(){
                     if(!/^[_a-zA-Z]\w*$/.test(k)) {
                         nextPath = currpath + "['" + k +"']"
                     }
-                    try{
-                        if(isMatch(k, nextPath)){
-                            console.log(nextPath)
-                            foundCount++
-                        }
-                        queue.push({
-                            obj: obj[k],
-                            path: nextPath
-                        })
-                    }catch(e){}
+                    if(isMatch(k, nextPath)){
+                        console.log(nextPath)
+                        foundCount++
+                    }
+                    queue.push({
+                        obj: obj[k],
+                        path: nextPath
+                    })
                 }
             }
+            if (i>giveup) console.log('fail', queue)
         }
         let initialPath = '';
         if (!_obj) {
