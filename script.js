@@ -33,23 +33,26 @@ function utilsInject(){
                 obj,
                 path:currpath
             }]
-            while(queue.length){
+            let i = 1
+            let maxiterations = 60000
+            while(queue.length  && i < maxiterations){
+                i++
                 let curr = queue.shift()
                 let currpath = curr.path
                 let obj = curr.obj
-                if(!obj || seen.has(obj) || /.requirejs\.s/.test(currpath) || currpath.length > 130){
+                if(!obj || seen.has(obj) || /(.requirejs\.s|_reactInternalInstance)/.test(currpath) || currpath.length > 280){
                     continue
                 }
                 if(foundCount > limit){
                     return
                 }
                 seen.add(obj)
-                for(var k in obj) {
-                    let nextPath = currpath + '.' + k
-                    if(!/^[_a-zA-Z]\w*$/.test(k)) {
-                        nextPath = currpath + "['" + k +"']"
-                    }
-                    try{
+                if(queue.length < maxiterations - i){
+                    for(var k in obj) {
+                        let nextPath = currpath + '.' + k
+                        if(!/^[_a-zA-Z]\w*$/.test(k)) {
+                            nextPath = currpath + "['" + k +"']"
+                        }
                         if(isMatch(k, nextPath)){
                             console.log(nextPath)
                             foundCount++
@@ -58,9 +61,10 @@ function utilsInject(){
                             obj: obj[k],
                             path: nextPath
                         })
-                    }catch(e){}
+                    }
                 }
             }
+            if(queue.length) console.log(queue)
         }
         let initialPath = '';
         if (!_obj) {
