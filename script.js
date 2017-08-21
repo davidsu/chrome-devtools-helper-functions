@@ -19,7 +19,7 @@ function utilsInject(){
         return a;
     }
 
-    function findPath(_obj, prop, giveup=100000, limit = 10, exactOnly = false){
+    function findPath(_obj, prop, limit = 10, exactOnly = false){
         var foundCount = 0
         var seen = new Set()
         function isMatch(foundProp, fullPath) {
@@ -28,41 +28,43 @@ function utilsInject(){
             }
             return prop instanceof RegExp && prop.test(fullPath)  
         }
-        let queue = []
         function _findPath(obj, currpath){
-            queue.push({
+            let queue = [{
                 obj,
                 path:currpath
-            })
-            let i = 0
-            while(queue.length && i<=giveup){
-                i++;
+            }]
+            let i = 1
+            let maxiterations = 60000
+            while(queue.length  && i < maxiterations){
+                i++
                 let curr = queue.shift()
                 let currpath = curr.path
                 let obj = curr.obj
-                if(!obj || seen.has(obj) || /(.requirejs\.s|_reactInternalInstance)/.test(currpath) || currpath.length > 130){
+                if(!obj || seen.has(obj) || /(.requirejs\.s|_reactInternalInstance)/.test(currpath) || currpath.length > 280){
                     continue
                 }
                 if(foundCount > limit){
                     return
                 }
                 seen.add(obj)
-                for(var k in obj) {
-                    let nextPath = currpath + '.' + k
-                    if(!/^[_a-zA-Z]\w*$/.test(k)) {
-                        nextPath = currpath + "['" + k +"']"
+                if(queue.length < maxiterations - i){
+                    for(var k in obj) {
+                        let nextPath = currpath + '.' + k
+                        if(!/^[_a-zA-Z]\w*$/.test(k)) {
+                            nextPath = currpath + "['" + k +"']"
+                        }
+                        if(isMatch(k, nextPath)){
+                            console.log(nextPath)
+                            foundCount++
+                        }
+                        queue.push({
+                            obj: obj[k],
+                            path: nextPath
+                        })
                     }
-                    if(isMatch(k, nextPath)){
-                        console.log(nextPath)
-                        foundCount++
-                    }
-                    queue.push({
-                        obj: obj[k],
-                        path: nextPath
-                    })
                 }
             }
-            if (i>giveup) console.log('fail', queue)
+            if(queue.length) console.log(queue)
         }
         let initialPath = '';
         if (!_obj) {
@@ -125,6 +127,14 @@ function utilsInject(){
     !window.fp && (window.fp = findPath)
     window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPath('requirejs.s.contexts._.defined', ...a) })
 }
+oldconsoleerror = console.error
+console.error = function (a) {
+    if (typeof a === 'string' && /^Warning:.*(https:\/\/fb.me|React.*npm|Calling PropTypes validators directly is not supported|Failed prop type:)/.test(a) ) {
+        return
+    }
+    oldconsoleerror.apply(console.error, arguments)
+}
+restoreConsoleError = () => console.error = oldconsoleerror
 window.utilsInject = utilsInject;
 window.tojson = (j) => JSON.stringify(j, null, 4)
 utilsInject();
