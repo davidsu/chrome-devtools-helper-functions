@@ -80,7 +80,7 @@ function setup(rootArg){
     root.__depth = 1
     return {root, queue, visitedQueue}
 }
-function findPathBFS(rootArg, prop, limit = 3000000){
+function findPathBFS(rootArg, prop, limit = 300000){
     //todo: get rid of this Dequeue, use an array instead
     console.time('fpBFS')
     const {root, queue, visitedQueue} = setup(rootArg)
@@ -89,6 +89,18 @@ function findPathBFS(rootArg, prop, limit = 3000000){
     unmark(visitedQueue)
     console.timeEnd('fpBFS')
 }
+findPathBFS.get = keyOrRegex => {
+    if (keyOrRegex instanceof RegExp) {
+        result.forEach((val, key) => {
+            if(keyOrRegex.test(key)){
+                console.log(`%c${key}`, 'color:#5db0d7')
+                console.log(val, '\n')
+            }
+        })
+    }
+    return result.get(keyOrRegex)
+}
+
 Object.defineProperties(findPathBFS, {
     details: {
         get: () => {
@@ -97,19 +109,6 @@ Object.defineProperties(findPathBFS, {
                 console.log(value)
             })
         }
-    },
-    get: {
-        get: keyOrRegex => {
-                if (keyOrRegex instanceof RegExp) {
-                    result.forEach((val, key) => {
-                        if(keyOrRegex.test(key)){
-                            console.log(`%c${key}`, 'color:#5db0d7')
-                            console.log(val, '\n')
-                        }
-                    })
-                }
-                return result.get(keyOrRegex)
-            }
     },
     result: {
         get: () => result
