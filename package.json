@@ -4,7 +4,6 @@
     "watch": "npm run build; onchange 'src/**/*' -- npm run build"
   },
   "dependencies": {
-    "double-ended-queue": "^2.1.0-0",
     "onchange": "^3.2.1",
     "webpack": "^3.8.1"
   }
