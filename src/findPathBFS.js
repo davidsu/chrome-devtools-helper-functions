@@ -17,10 +17,20 @@ function unmark(visitedQueue){
     }
 }
 function processNode(queue, visitedQueue, prop, parent, node, key) {
-    node.__key = key
-    node.__visited = 1
-    node.__depth = parent.__depth + 1
-    node.__parent = parent
+    if(Object.isExtensible(node)){
+        node.__key = key
+        node.__visited = 1
+        node.__depth = parent.__depth + 1
+        node.__parent = parent
+    } else {
+        node = {
+            __original: node,
+            __key: key,
+            __visited: 1,
+            __depth: parent.__depth + 1,
+            __parent: parent
+        }
+    }
     //todo allow to match path
     if(isMatch(key, key, prop)){
         const path = _getPath(parent, key, initialPath)
@@ -34,7 +44,8 @@ function processNode(queue, visitedQueue, prop, parent, node, key) {
 
 function processNodeIfNeeded(queue, visitedQueue, prop, parent, key) {
     if(!(/(^requirejs$|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
-        let node = parent[key]
+        const originalNode = parent.__original || parent
+        let node = originalNode[key]
         if(shouldProcessNext(node)){
             processNode(queue, visitedQueue, prop, parent, node, key)
             return true
@@ -45,7 +56,8 @@ function processNodeIfNeeded(queue, visitedQueue, prop, parent, key) {
 function findPath(queue, visitedQueue, node, limit, prop) {
     let iterations = 0
     while ( node && ++iterations < limit){
-        for(var k in node) {
+        const originalNode = node.__original || node
+        for(var k in originalNode) {
             processNodeIfNeeded(queue, visitedQueue, prop, node, k) && iterations++
         }
         node = queue.dequeue()
@@ -81,6 +93,7 @@ function setup(rootArg){
     return {root, queue, visitedQueue}
 }
 function findPathBFS(rootArg, prop, limit = 300000){
+    //todo: we need a set of isExtensible=false visited nodes
     //todo: get rid of this Dequeue, use an array instead
     console.time('fpBFS')
     const {root, queue, visitedQueue} = setup(rootArg)
