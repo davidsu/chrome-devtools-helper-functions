@@ -1,28 +1,41 @@
-const Dequeue = require('double-ended-queue')
+const Dequeue = require('./bfsQueueLikeStructure')//require('double-ended-queue')
 const {isMatch, _getPath} = require('./utils')
 
 let result
 let initialPath = ''
 const objOrFuncRegex = /(?:function|object)/
 const isDomNode = node => typeof node == "object" && typeof node.nodeType === "number" && typeof node.nodeName==="string"
-const shouldProcessNext = next => next && objOrFuncRegex.test(typeof next) && !isDomNode(next) && !next.__visited
 let findcount = 0
-function unmark(visitedQueue){
+let queueLike
+let nonExtensibleVisitedSet
+let maxDepthLookedInto
+
+function shouldProcessNext(node) {
+    if (!node) {
+        return false
+    }
+    if (!Object.isExtensible(node)) {
+        return !nonExtensibleVisitedSet.has(node)
+    }
+    return objOrFuncRegex.test(typeof node) && !isDomNode(node) && !node.__visited
+}
+function unmark(){
     let node
-    while(node = visitedQueue.dequeue()){
+    while(node = queueLike.pop()){
         delete node.__parent
         delete node.__visited
         delete node.__depth
         delete node.__key
     }
 }
-function processNode(queue, visitedQueue, prop, parent, node, key) {
+function processNode(prop, parent, node, key) {
     if(Object.isExtensible(node)){
         node.__key = key
         node.__visited = 1
         node.__depth = parent.__depth + 1
         node.__parent = parent
     } else {
+        nonExtensibleVisitedSet.add(node)
         node = {
             __original: node,
             __key: key,
@@ -35,32 +48,33 @@ function processNode(queue, visitedQueue, prop, parent, node, key) {
     if(isMatch(key, key, prop)){
         const path = _getPath(parent, key, initialPath)
         findcount = ++findcount % 2
-        findcount ? console.log(path) : console.log(`%c${path}`, 'color:#bcb2a2')
+        findcount ? console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf'): console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
+        // console.log(path)
         result.set(path, node)
     }
-    queue.enqueue(node)
-    visitedQueue.enqueue(node)
+    queueLike.enqueue(node)
 }
 
-function processNodeIfNeeded(queue, visitedQueue, prop, parent, key) {
-    if(!(/(^requirejs$|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
+function processNodeIfNeeded(prop, parent, key) {
+    if(!(/(?:^requirejs$|_reactBoundContext|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
         const originalNode = parent.__original || parent
         let node = originalNode[key]
-        if(shouldProcessNext(node)){
-            processNode(queue, visitedQueue, prop, parent, node, key)
+        if(shouldProcessNext(node, originalNode)){
+            processNode(prop, parent, node, key)
             return true
         }
     }
 }
 
-function findPath(queue, visitedQueue, node, limit, prop) {
+function findPath(node, limit, prop) {
     let iterations = 0
     while ( node && ++iterations < limit){
         const originalNode = node.__original || node
+        maxDepthLookedInto = node.__depth
         for(var k in originalNode) {
-            processNodeIfNeeded(queue, visitedQueue, prop, node, k) && iterations++
+            processNodeIfNeeded(prop, node, k) && iterations++
         }
-        node = queue.dequeue()
+        node = queueLike.dequeue()
     }
     return {
         lastProcessedObj: node
@@ -83,23 +97,23 @@ function extractRoot(root){
 }
 function setup(rootArg){
     result = new Map()
-    const queue = new Dequeue(5000)
-    const visitedQueue = new Dequeue(5000)
+    nonExtensibleVisitedSet = new Set()
+    maxDepthLookedInto = 0
+    queueLike = new Dequeue()
     const root = extractRoot(rootArg)
-    queue.enqueue(root)
-    visitedQueue.enqueue(root)
+    queueLike.enqueue(root)
     root.__visited = 1
     root.__depth = 1
-    return {root, queue, visitedQueue}
+    return {root}
 }
 function findPathBFS(rootArg, prop, limit = 300000){
     //todo: we need a set of isExtensible=false visited nodes
     //todo: get rid of this Dequeue, use an array instead
     console.time('fpBFS')
-    const {root, queue, visitedQueue} = setup(rootArg)
-    const {lastProcessedObj} = findPath(queue, visitedQueue, root, limit, prop)
-    console.log(`max depth looked into = ${lastProcessedObj ? lastProcessedObj.__depth : visitedQueue.peekBack().__depth}`)
-    unmark(visitedQueue)
+    const {root} = setup(rootArg)
+    const {lastProcessedObj} = findPath(root, limit, prop)
+    console.log('max depth looked into = ', maxDepthLookedInto)
+    unmark()
     console.timeEnd('fpBFS')
 }
 findPathBFS.get = keyOrRegex => {
