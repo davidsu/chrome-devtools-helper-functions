@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "node webpack.config.js",
-    "watch": "npm run build; onchange 'src/**/*' -- npm run build"
+    "watch": "npm run build; onchange 'src/**/*' 'background.js' 'manifest.json' -- npm run build"
   },
   "dependencies": {
     "onchange": "^3.2.1",

@@ -1,5 +1,6 @@
 const Dequeue = require('./bfsQueueLikeStructure')//require('double-ended-queue')
 const {isMatch, _getPath} = require('./utils')
+const take_ = require('lodash/take') 
 
 let result
 let initialPath = ''
@@ -48,7 +49,9 @@ function processNode(prop, parent, node, key) {
     if(isMatch(key, key, prop)){
         const path = _getPath(parent, key, initialPath)
         findcount = ++findcount % 2
-        findcount ? console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf'): console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
+        findcount ? 
+            console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf') :
+            console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
         // console.log(path)
         result.set(path, node)
     }
@@ -56,7 +59,10 @@ function processNode(prop, parent, node, key) {
 }
 
 function processNodeIfNeeded(prop, parent, key) {
-    if(!(/(?:^requirejs$|_reactBoundContext|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
+    if (key === 's' && parent.__key === 'require') {
+        return
+    }
+    if(!(/(?:^requirejs$|_renderedComponent|_reactBoundContext|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
         const originalNode = parent.__original || parent
         let node = originalNode[key]
         if(shouldProcessNext(node, originalNode)){
@@ -106,9 +112,7 @@ function setup(rootArg){
     root.__depth = 1
     return {root}
 }
-function findPathBFS(rootArg, prop, limit = 300000){
-    //todo: we need a set of isExtensible=false visited nodes
-    //todo: get rid of this Dequeue, use an array instead
+function findPathBFS(rootArg, prop, limit = 90000){
     console.time('fpBFS')
     const {root} = setup(rootArg)
     const {lastProcessedObj} = findPath(root, limit, prop)
@@ -116,7 +120,9 @@ function findPathBFS(rootArg, prop, limit = 300000){
     unmark()
     console.timeEnd('fpBFS')
 }
+
 findPathBFS.get = keyOrRegex => {
+    if (typeof keyOrRegex === 'string') keyOrRegex = new RegExp(keyOrRegex)
     if (keyOrRegex instanceof RegExp) {
         result.forEach((val, key) => {
             if(keyOrRegex.test(key)){
@@ -125,7 +131,39 @@ findPathBFS.get = keyOrRegex => {
             }
         })
     }
-    return result.get(keyOrRegex)
+}
+findPathBFS.filter = keyOrRegex => {
+    if (typeof keyOrRegex === 'string') keyOrRegex = new RegExp(keyOrRegex)
+    let arr = []
+    if (keyOrRegex instanceof RegExp) {
+        for (let [key] of result.entries()) {
+            if(keyOrRegex.test(key))
+                arr.push(key)
+        }
+        logArr(arr)
+    }
+}
+
+findPathBFS.take = (val = 10) => {
+    let i = 0
+    let arr = []
+    for (let [key] of result.entries()) {
+        if(++i > val) break
+        arr.push(key)
+    }
+    logArr(arr)
+}
+
+const logArr = arr => {
+    arr.forEach(a => console.log(a))
+}
+
+findPathBFS.reverse = () => {
+    const arr = []
+    for (let [key] of result.entries()) {
+        arr.push(key)
+    }
+    logArr(arr)
 }
 
 Object.defineProperties(findPathBFS, {
@@ -139,6 +177,15 @@ Object.defineProperties(findPathBFS, {
     },
     result: {
         get: () => result
+    },
+    reverse: {
+        get: () => {
+            let res = []
+            for (let key of result.keys()) {
+                res.push(key)
+            }
+            logArr(res.reverse())
+        }
     }
 })
 

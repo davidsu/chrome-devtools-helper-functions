@@ -8,7 +8,7 @@ window.printJsonCircular = printJsonCircular
 window.findPath = findPathBFS
 window.findPathDFS = window.fpDFS = findPathDFS
 !window.fp && (window.fp = findPathBFS)
-window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPathDFS('requirejs.s.contexts._.defined', ...a) })
+window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPathBFS('requirejs.s.contexts._.defined', ...a) })
 findPath.help = 
 `fp = findPath(_obj, prop, limit = 300000)        json traverse: find property somewhere in this object
                                                   pass "typeof _obj == 'string'" to search in window obj and print the whole path
@@ -16,7 +16,13 @@ findPath.help =
 
 fp.details                                        reprint last results but console.log the actual object with it's path
 
-fp.get(regex)                                     like fp.details but filter using regex.test(key)
+fp.filter(regex)                                  filter results using regex.test(key)
+
+fp.get(regex)                                     same as fp.details but filter by regex.test(key)
+
+fp.reverse                                        print fp.result in reverse(shortest last)
+
+fp.take(n)                                        like _.take(fp.result, n)
 
 fdp                                               "findDefinePath" like findPath(require.s.contexts._.defined, ...)                                                                            
 
