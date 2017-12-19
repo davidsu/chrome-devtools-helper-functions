@@ -5,13 +5,24 @@ const take_ = require('lodash/take')
 let result
 let initialPath = ''
 const objOrFuncRegex = /(?:function|object)/
-const isDomNode = node => typeof node == "object" && typeof node.nodeType === "number" && typeof node.nodeName==="string"
 let findcount = 0
 let queueLike
 let nonExtensibleVisitedSet
 let maxDepthLookedInto
+const _limit = 9000
 
-function shouldProcessNext(node) {
+function isDomNode(node) {
+   if( typeof node !== "object") {
+       return false
+   }
+   try{
+       return typeof node.nodeType === "number" && typeof node.nodeName==="string"
+   }catch(e) {
+       //avoid error of type `Blocked a frame with origin "https://editor.wix.com" from accessing a cross-origin frame.`
+       return true
+   }
+}
+function shouldProcessNext(node, parent) {
     if (!node) {
         return false
     }
@@ -48,8 +59,8 @@ function processNode(prop, parent, node, key) {
     //todo allow to match path
     if(isMatch(key, key, prop)){
         const path = _getPath(parent, key, initialPath)
-        findcount = ++findcount % 2
-        findcount ? 
+        --findcount
+        findcount % 2 ? 
             console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf') :
             console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
         // console.log(path)
@@ -74,7 +85,7 @@ function processNodeIfNeeded(prop, parent, key) {
 
 function findPath(node, limit, prop) {
     let iterations = 0
-    while ( node && ++iterations < limit){
+    while ( node && ++iterations < limit && findcount > 0){
         const originalNode = node.__original || node
         maxDepthLookedInto = node.__depth
         for(var k in originalNode) {
@@ -112,7 +123,40 @@ function setup(rootArg){
     root.__depth = 1
     return {root}
 }
-function findPathBFS(rootArg, prop, limit = 90000){
+
+function getArguments(){
+    findcount = 1000000
+    let limit = _limit
+    if(arguments.length === 1 ){
+        findcount = 20
+        return {
+            prop: arguments[0],
+            rootArg: 'rendered',
+            limit
+        }
+    }
+    if((arguments.length === 2 && typeof arguments[1] === 'number')){
+        let limit
+        if(arguments[1] < 150){
+            findcount = arguments[1]
+            limit = 1000000
+        } else {
+            limit = arguments[1]
+        }
+        return {
+            prop: arguments[0],
+            rootArg: 'rendered',
+            limit,
+        }
+    }
+    return {
+        rootArg: arguments[0],
+        prop: argument[1],
+        limit: argument[2] || _limit
+    }
+}
+function findPathBFS(...args){
+    const {rootArg, prop, limit, maxFound} = getArguments(...args) 
     console.time('fpBFS')
     const {root} = setup(rootArg)
     const {lastProcessedObj} = findPath(root, limit, prop)
