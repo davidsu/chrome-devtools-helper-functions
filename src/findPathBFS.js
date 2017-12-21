@@ -9,7 +9,7 @@ let findcount = 0
 let queueLike
 let nonExtensibleVisitedSet
 let maxDepthLookedInto
-const _limit = 9000
+const _limit = 300000
 
 function isDomNode(node) {
    if( typeof node !== "object") {
@@ -151,8 +151,8 @@ function getArguments(){
     }
     return {
         rootArg: arguments[0],
-        prop: argument[1],
-        limit: argument[2] || _limit
+        prop: arguments[1],
+        limit: arguments[2] || _limit
     }
 }
 function findPathBFS(...args){
