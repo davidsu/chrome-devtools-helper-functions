@@ -156,12 +156,12 @@ function getArguments(){
     }
 }
 function findPathBFS(...args){
-    const {rootArg, prop, limit, maxFound} = getArguments(...args) 
     console.time('fpBFS')
+    const {rootArg, prop, limit, maxFound} = getArguments(...args) 
     const {root} = setup(rootArg)
-    const {lastProcessedObj} = findPath(root, limit, prop)
-    console.log('max depth looked into = ', maxDepthLookedInto)
+    findPath(root, limit, prop)
     unmark()
+    console.log('max depth looked into = ', maxDepthLookedInto)
     console.timeEnd('fpBFS')
 }
 
