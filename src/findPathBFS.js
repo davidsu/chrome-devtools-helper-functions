@@ -22,6 +22,7 @@ function isDomNode(node) {
        return true
    }
 }
+
 function shouldProcessNext(node, parent) {
     if (!node) {
         return false
@@ -29,7 +30,7 @@ function shouldProcessNext(node, parent) {
     if (!Object.isExtensible(node)) {
         return !nonExtensibleVisitedSet.has(node)
     }
-    return objOrFuncRegex.test(typeof node) && !isDomNode(node) && !node.__visited
+    return objOrFuncRegex.test(typeof node) && !node.__visited
 }
 function unmark(){
     let node
@@ -39,6 +40,19 @@ function unmark(){
         delete node.__depth
         delete node.__key
     }
+}
+
+function handlePossibleMatch(key, prop, parent, node) {
+   //todo allow to match path
+   if(isMatch(key, key, prop)){
+       const path = _getPath(parent, key, initialPath)
+       --findcount
+       findcount % 2 ? 
+           console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf') :
+           console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
+       // console.log(path)
+       result.set(path, node)
+   }
 }
 function processNode(prop, parent, node, key) {
     if(Object.isExtensible(node)){
@@ -56,16 +70,7 @@ function processNode(prop, parent, node, key) {
             __parent: parent
         }
     }
-    //todo allow to match path
-    if(isMatch(key, key, prop)){
-        const path = _getPath(parent, key, initialPath)
-        --findcount
-        findcount % 2 ? 
-            console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf') :
-            console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
-        // console.log(path)
-        result.set(path, node)
-    }
+    handlePossibleMatch(key, prop, parent, node)
     queueLike.enqueue(node)
 }
 
@@ -76,9 +81,14 @@ function processNodeIfNeeded(prop, parent, key) {
     if(!(/(?:^requirejs$|_renderedComponent|_reactBoundContext|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
         const originalNode = parent.__original || parent
         let node = originalNode[key]
+        if(isDomNode(node)) {
+            return
+        }
         if(shouldProcessNext(node, originalNode)){
             processNode(prop, parent, node, key)
             return true
+        } else {
+            handlePossibleMatch(key, prop, parent, node)
         }
     }
 }
