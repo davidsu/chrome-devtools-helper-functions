@@ -1,3 +1,4 @@
+if(typeof window == 'undefined') window = global
 const findPathBFS = require('./findPathBFS')
 const printJsonCircular = require('./printJsonCircular')
 const findPathDFS = require('./findPathDFS')
@@ -35,3 +36,4 @@ printJsonCircular(obj)                            JSON.stringify(obj, null, 4) b
 
 tojson(obj)                                       JSON.stringify(obj, null, 4)
 `
+if(window==global) window=undefined

@@ -39,17 +39,21 @@ function unmark(){
         delete node.__visited
         delete node.__depth
         delete node.__key
+        delete node.__printed
     }
 }
 
+function fplog(path) {
+    findcount % 2 ? 
+        console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf') :
+        console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
+}
 function handlePossibleMatch(key, prop, parent, node) {
    //todo allow to match path
    if(isMatch(key, key, prop)){
        const path = _getPath(parent, key, initialPath)
        --findcount
-       findcount % 2 ? 
-           console.log(`%c${path}`, 'background-color:#242424;color:#bdc6cf') :
-           console.log(`%c${path}`, 'background-color:#242424;color:#bcb2a2')
+       fplog(path)
        // console.log(path)
        result.set(path, node)
    }
@@ -87,8 +91,12 @@ function processNodeIfNeeded(prop, parent, key) {
         if(shouldProcessNext(node, originalNode)){
             processNode(prop, parent, node, key)
             return true
-        } else {
-            handlePossibleMatch(key, prop, parent, node)
+        } else if (Object.isExtensible(originalNode)) {
+            if(isMatch(key, key, prop) && (!originalNode.__printed || !originalNode.__printed.has(key))){
+                originalNode.__printed = originalNode.__printed || new Set()
+                originalNode.__printed.add(key)
+                handlePossibleMatch(key, prop, parent, node)
+            }
         }
     }
 }
