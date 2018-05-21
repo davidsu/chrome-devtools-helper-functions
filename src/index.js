@@ -10,7 +10,7 @@ window.findPath = findPathBFS
 window.findPathDFS = window.fpDFS = findPathDFS
 !window.fp && (window.fp = findPathBFS)
 window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPathBFS('requirejs.s.contexts._.defined', ...a) })
-window.ghcollapseall = $$('button.js-details-target').forEach(element => element.click())
+window.ghcollapseall = () => $$('button.js-details-target').forEach(element => element.click())
 findPath.help = 
 `fp = findPath(_obj = 'rendered', prop, limit = 9000)        json traverse: find property somewhere in this object
                                                   pass "typeof _obj == 'string'" to search in window obj and print the whole path

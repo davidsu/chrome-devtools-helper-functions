@@ -1,6 +1,6 @@
 {
     "name": "utils inject",
-    "version": "0.0.17",
+    "version": "0.0.18",
     "manifest_version": 2,
     "description": "Injecting wix helper stuff",
     "content_scripts": [
