@@ -10,6 +10,7 @@ window.findPath = findPathBFS
 window.findPathDFS = window.fpDFS = findPathDFS
 !window.fp && (window.fp = findPathBFS)
 window.requirejs && !window.fdp && (window.fdp = (...a) => { console.log('require.s.contexts._.defined'); findPathBFS('requirejs.s.contexts._.defined', ...a) })
+window.ghcollapseall = $$('button.js-details-target').forEach(element => element.click())
 findPath.help = 
 `fp = findPath(_obj = 'rendered', prop, limit = 9000)        json traverse: find property somewhere in this object
                                                   pass "typeof _obj == 'string'" to search in window obj and print the whole path
@@ -35,5 +36,7 @@ fdp                                               "findDefinePath" like findPath
 printJsonCircular(obj)                            JSON.stringify(obj, null, 4) but allow for object with circular reference
 
 tojson(obj)                                       JSON.stringify(obj, null, 4)
+
+ghcollapseall                                     on github pullrequest collapse all files
 `
 if(window==global) window=undefined

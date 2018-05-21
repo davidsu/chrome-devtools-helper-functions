@@ -14,6 +14,10 @@ const webpackConfig = {
     }
 } 
 if(process.env.NODE_ENV === 'release') {
+    const fs = require('fs')
+    const manifestJson = JSON.parse(fs.readFileSync('manifest.json', 'utf8'))
+    manifestJson.version = manifestJson.version.replace(/(\d+\.\d+\.)(\d+)/, (match, p1, p2) => `${p1}${parseInt(p2)+1}`)
+    fs.writeFileSync('manifest.json', JSON.stringify(manifestJson, null, 4))
     webpackConfig.module = {
         rules: [{
             test: /findPathBFS/,
