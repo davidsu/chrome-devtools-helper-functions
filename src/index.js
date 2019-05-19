@@ -23,9 +23,9 @@ findPath.help =
 
 fp.details                                        reprint last results but console.log the actual object with it's path
 
-fp.filter(regex)                                  filter results using regex.test(key)
+fp.filter(regexOrCallback)                        filter results using regex.test(key) or callBack(key)
 
-fp.get(regex)                                     same as fp.details but filter by regex.test(key)
+fp.get(regexOrCallback)                           same as fp.details but filter by regex.test(key) or callBack(key)
 
 fp.reverse                                        print fp.result in reverse(shortest last)
 

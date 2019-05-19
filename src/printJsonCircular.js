@@ -1,17 +1,17 @@
 function printJsonCircular(o) {
-    var cache = [];
+    const cache = new Set()
     var a = JSON.stringify(o, function(key, value) {
         if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
+            if (cache.has(value)) {
                 // Circular reference found, discard key
                 return;
             }
             // Store value in our collection
-            cache.push(value);
+            cache.add(value);
         } else {
             var functionObj = {}
             functionObj['function' + key] = key
-            cache.push(functionObj)
+            cache.add(functionObj)
         }
         return value;
     }, 4);

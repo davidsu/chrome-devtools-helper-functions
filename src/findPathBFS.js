@@ -82,7 +82,7 @@ function processNodeIfNeeded(prop, parent, key) {
     if (key === 's' && parent.__key === 'require') {
         return
     }
-    if(!(/(?:^requirejs$|_renderedComponent|_reactBoundContext|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
+    if(!(/(?:^requirejs$|_renderedComponent|_reactInternalFiber|_reactBoundContext|_reactInternalInstance|__key|__visited|__parent|__depth)/.test(key))){
         const originalNode = parent.__original || parent
         let node = originalNode[key]
         if(isDomNode(node)) {
@@ -175,7 +175,7 @@ function getArguments(){
 }
 function findPathBFS(...args){
     console.time('fpBFS')
-    const {rootArg, prop, limit, maxFound} = getArguments(...args) 
+    const {rootArg, prop, limit} = getArguments(...args) 
     const {root} = setup(rootArg)
     findPath(root, limit, prop)
     unmark()
@@ -185,25 +185,27 @@ function findPathBFS(...args){
 
 findPathBFS.get = keyOrRegex => {
     if (typeof keyOrRegex === 'string') keyOrRegex = new RegExp(keyOrRegex)
-    if (keyOrRegex instanceof RegExp) {
-        result.forEach((val, key) => {
-            if(keyOrRegex.test(key)){
-                console.log(`%c${key}`, 'color:#5db0d7')
-                console.log(val, '\n')
-            }
-        })
-    }
+    const fn = keyOrRegex instanceof RegExp ? keyOrRegex.test : keyOrRegex
+    result.forEach((val, key) => {
+       if(fn(key)){
+          console.log(`%c${key}`, 'color:#5db0d7')
+          console.log(val, '\n')
+       }
+    })
 }
 findPathBFS.filter = keyOrRegex => {
     if (typeof keyOrRegex === 'string') keyOrRegex = new RegExp(keyOrRegex)
-    let arr = []
-    if (keyOrRegex instanceof RegExp) {
-        for (let [key] of result.entries()) {
+        let arr = []
+    for (let [key] of result.entries()) {
+        if (keyOrRegex instanceof RegExp) {
             if(keyOrRegex.test(key))
                 arr.push(key)
+        } else if(typeof keyOrRegex === 'function'){
+            if(keyOrRegex(key))
+                arr.push(key)
         }
-        logArr(arr)
     }
+    logArr(arr)
 }
 
 findPathBFS.take = (val = 10) => {
