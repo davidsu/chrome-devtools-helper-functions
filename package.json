@@ -5,7 +5,7 @@
     "watch": "npm run build; onchange 'src/**/*' 'background.js' 'manifest.json' -- npm run build"
   },
   "dependencies": {
-    "onchange": "^3.2.1",
+    "onchange": "^6.0.0",
     "string-replace-loader": "^1.3.0",
     "string-replace-webpack-plugin": "^0.1.3",
     "webpack": "^3.8.1"
