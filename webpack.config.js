@@ -51,7 +51,7 @@ if(process.env.NODE_ENV === 'release') {
     }
 }
 webpack(webpackConfig, function(err, stats) {
-    fs.copyFileSync('manifest.json', path.resolve('build', 'mainfest.json'))
+    fs.copyFileSync('manifest.json', path.resolve('build', 'manifest.json'))
     fs.copyFileSync('background.js', path.resolve('build', 'background.js'))
     // execSync('cp ./manifest.json ./build/manifest.json')
     // execSync('cp ./background.js ./build/background.js')
