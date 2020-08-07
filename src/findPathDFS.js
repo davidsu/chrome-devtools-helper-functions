@@ -1,3 +1,4 @@
+const {console} = require('./logger')
 function findPathDFS(_obj, prop, limit = 10, exactOnly = false){
     var foundCount = 0
     var seen = new Set()

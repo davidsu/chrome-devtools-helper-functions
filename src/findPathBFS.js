@@ -1,3 +1,4 @@
+const {console} = require('./logger')
 const Dequeue = require('./bfsQueueLikeStructure')//require('double-ended-queue')
 const {isMatch, _getPath} = require('./utils')
 const take_ = require('lodash/take') 
@@ -16,7 +17,7 @@ function isDomNode(node) {
        return false
    }
    try{
-       return typeof node.nodeType === "number" && typeof node.nodeName==="string"
+       return node && typeof node.nodeType === "number" && typeof node.nodeName==="string"
    }catch(e) {
        //avoid error of type `Blocked a frame with origin "https://editor.wix.com" from accessing a cross-origin frame.`
        return true
@@ -149,7 +150,6 @@ function getArguments(){
         findcount = 20
         return {
             prop: arguments[0],
-            rootArg: 'rendered',
             limit
         }
     }
@@ -163,7 +163,6 @@ function getArguments(){
         }
         return {
             prop: arguments[0],
-            rootArg: 'rendered',
             limit,
         }
     }
